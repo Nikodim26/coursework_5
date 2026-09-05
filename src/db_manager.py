@@ -4,61 +4,54 @@ import psycopg2
 
 
 class DBManager():
-    def __init__(self, db_name, filename):
-        self.db_name = db_name
+    def __init__(self, db_name: str, filename: str) -> None:
         self.path = Path(__file__).resolve().parent.parent / filename
-
-        params = self.config()
-        conn = psycopg2.connect(dbname='postgres', **params)
-        conn.autocommit = True
-        cur = conn.cursor()
-
-        cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}'")
-        ex=cur.fetchone()
-        if not ex:
-            cur.execute(f"CREATE DATABASE {db_name}")
-
-        cur.close()
-        conn.close()
-
-    def config(self, section="postgresql") -> dict:
-        """Считывает параметры подключения к postgresql"""
+        self.db_name = db_name
 
         parser = ConfigParser()
         parser.read(self.path)
-        db = {}
-        if parser.has_section(section):
-            params = parser.items(section)
-            for param in params:
-                db[param[0]] = param[1]
+
+        if parser.has_section("postgresql"):
+            params = parser.items("postgresql")
+            self.params = {param[0]: param[1] for param in params}
         else:
-            raise Exception(
-                'Section {0} is not found in the {1} file.'.format(section, self.path))
-        return db
+            raise Exception('Section {0} is not found in the {1} file.'.format("postgresql", self.path))
 
+        self.creating_a_database()
 
-    def working_with_the_base(self, request: str) -> None:
-        """Работает с базой данных"""
+    def creating_a_database(self) -> None:
+        """Создает базу данных"""
 
-        params = self.config()
-        conn = psycopg2.connect(dbname=self.db_name, **params)
+        conn = psycopg2.connect(dbname='postgres', **self.params)
         conn.autocommit = True
         cur = conn.cursor()
 
-        cur.execute(request)
+        cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{self.db_name}'")
+        if not cur.fetchone():
+            cur.execute(f"CREATE DATABASE {self.db_name}")
 
         cur.close()
         conn.close()
 
+    def creating_a_table(self, country: str) -> None:
+        """Создает таблицу с характеристиками самолетов над страной"""
 
-# dbm = DBManager('aaa', 'database.ini')
-# dbm.creating_a_database()
-# dbm.working_with_the_base('''CREATE TABLE IF NOT EXISTS channels (
-#                             channel_id SERIAL PRIMARY KEY,
-#                             title VARCHAR(255) NOT NULL,
-#                             views INTEGER,
-#                             subscribers INTEGER,
-#                             videos INTEGER,
-#                             channel_url TEXT
-#                         )
-#                         ''')
+        conn = psycopg2.connect(dbname=self.db_name, **self.params)
+        conn.autocommit = True
+        cur = conn.cursor()
+
+        cur.execute(f'''CREATE TABLE IF NOT EXISTS tb_{country} (
+                                        airplane_id SERIAL PRIMARY KEY,
+                                        ICAO24 VARCHAR(10) NOT NULL,
+                                        Callsign  VARCHAR(10) NOT NULL,
+                                        Country_of_reg VARCHAR(20) NOT NULL,
+                                        Velocity REAL,
+                                        Geo_altitude REAL,
+                                        Longitude REAL,
+                                        Latitude REAL,
+                                        True_track REAL,
+                                        On_ground BOOLEAN                                
+                                    )
+                                    ''')
+        cur.close()
+        conn.close()
