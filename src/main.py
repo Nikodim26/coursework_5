@@ -14,15 +14,19 @@ def creation_of_aircraft_database(countries:list[str]) -> None:
         dbm = DBManager('airplanes', 'database.ini')
 
         dbm.working_with_the_base(f'''CREATE TABLE IF NOT EXISTS tb_{country} (
-                                channel_id SERIAL PRIMARY KEY,
-                                title VARCHAR(255) NOT NULL,
-                                views INTEGER,
-                                subscribers INTEGER,
-                                videos INTEGER,
-                                channel_url TEXT
+                                airplane_id SERIAL PRIMARY KEY,
+                                ICAO24 VARCHAR(10) NOT NULL,
+                                Callsign  VARCHAR(10) NOT NULL,
+                                Country_of_reg VARCHAR(20) NOT NULL,
+                                Velocity REAL,
+                                Geo_altitude REAL,
+                                Longitude REAL,
+                                Latitude REAL,
+                                True_track REAL,
+                                On_ground BOOLEAN                                
                             )
                             ''')
-
+        # break
 
 
 
