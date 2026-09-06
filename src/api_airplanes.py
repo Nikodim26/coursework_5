@@ -14,7 +14,7 @@ class ApiAeroplanes(APIAdapter):
         self.url = "https://opensky-network.org/api/states/all?"
         self.list_info = self.obtaining_information()
 
-    def obtaining_information(self) -> list:
+    def obtaining_information(self) -> list[Any] | None | Any:
         """Получение информации о самолетах в координатах страны"""
 
         try:
