@@ -1,26 +1,16 @@
-from src.api_airplanes import ApiAeroplanes
-from src.api_coord import ApiCoord
 from src.db_manager import DBManager
 
 
 def creation_of_aircraft_database(countries:list[str]) -> None:
-    """Создает базу данных о самолетах в воздушном пространстве указанных стран"""
+    """Работает с базой данных о самолетах в воздушном пространстве указанных стран"""
 
-    dbm = DBManager('airplanes', 'database.ini')
+    dbm = DBManager('airplanes', 'database.ini', countries)
 
-    for country in countries:
-        api_coord = ApiCoord(country)
-        api_aeroplanes = ApiAeroplanes(api_coord.coordinates).list_info
+    data=dbm.get_countries_and_aeroplanes_count()
+    for key,value in data.items():
+        print(f'В пространстве {key} находится {value} самолет')
 
-        dbm.creating_a_table(country,api_aeroplanes)
-
-
-
-
-
-        # break
-        a=1
-
+    # dbm.get_all_aeroplanes()
 
 if __name__ == "__main__":
     creation_of_aircraft_database(['germany','poland','italy','hungary'])
