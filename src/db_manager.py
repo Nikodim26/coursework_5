@@ -126,15 +126,13 @@ class DBManager:
         tables = cur.fetchall()
         for table in tables:
             cur.execute(f"SELECT ICAO24, Callsign, Country_of_reg FROM public.{table[0]};")
-            result.append(cur.fetchall())
+            result.extend(cur.fetchall())
 
         cur.close()
         conn.close()
         return result
 
-
-
-    def get_avg_speed(self)->dict:
+    def get_avg_speed(self)-> float:
         """получает среднюю скорость по самолетам."""
 
         conn = psycopg2.connect(dbname=self.db_name, **self.params)
@@ -142,28 +140,53 @@ class DBManager:
 
         cur.execute("SELECT table_name FROM information_schema.tables "
                     "WHERE table_type = 'BASE TABLE' AND table_schema = 'public';")
-        result = {}
+        result = 0
         tables = cur.fetchall()
         for table in tables:
             cur.execute(f"SELECT AVG(Velocity) FROM public.{table[0]};")
-            result[table[0][3:].title()] = cur.fetchall()[0][0]
+            result+= cur.fetchall()[0][0]
+
+        cur.close()
+        conn.close()
+        return result/len(tables)
+
+    def get_aeroplanes_with_higher_speed(self)->list:
+        """получает список всех самолетов, у которых скорость выше средней."""
+
+        velocity_avg=self.get_avg_speed()
+
+        conn = psycopg2.connect(dbname=self.db_name, **self.params)
+        cur = conn.cursor()
+
+        cur.execute("SELECT table_name FROM information_schema.tables "
+                    "WHERE table_type = 'BASE TABLE' AND table_schema = 'public';")
+        result = []
+        tables = cur.fetchall()
+        for table in tables:
+            cur.execute(f"SELECT ICAO24, Callsign, Country_of_reg, Velocity FROM public.{table[0]}"
+                        f" WHERE Velocity > {velocity_avg};")
+            result.extend(cur.fetchall())
 
         cur.close()
         conn.close()
         return result
 
 
-
-
-
-
-
-
-
-    def get_aeroplanes_with_higher_speed(self):
-        """получает список всех самолетов, у которых скорость выше средней."""
-        pass
-
-    def get_aeroplanes_with_keyword(self):
+    def get_aeroplanes_with_keyword(self, symbols:str)->list:
         """ получает список всех самолетов, в позывном которых содержатся переданные в метод символы."""
-        pass
+
+        conn = psycopg2.connect(dbname=self.db_name, **self.params)
+        cur = conn.cursor()
+
+        cur.execute("SELECT table_name FROM information_schema.tables "
+                    "WHERE table_type = 'BASE TABLE' AND table_schema = 'public';")
+        result = []
+        tables = cur.fetchall()
+        for table in tables:
+            cur.execute(f"SELECT ICAO24, Callsign, Country_of_reg, Velocity FROM public.{table[0]}"
+                        f" WHERE Callsign LIKE '%{symbols}%';")
+            result.extend(cur.fetchall())
+
+        cur.close()
+        conn.close()
+        return result
