@@ -5,14 +5,12 @@ from translate import Translator
 def translate_text(text: str) -> Any:
     """Переводит текст"""
 
-    translator_to_en = Translator(to_lang="en")
+    translator_to_ru = Translator(to_lang="ru")
 
-    if "а" <= text[0] <= "я" or "А" <= text[0] <= "Я":
-        return translator_to_en.translate(text).title()
-    return text.title()
+    return translator_to_ru.translate(text).title()
 
 def end(number)->str:
-
+    """Определяет окончание слова, обозначающего число"""
 
     if 10 <= number % 100 <= 14: return 'ов'
     else:

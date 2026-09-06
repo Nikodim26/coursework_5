@@ -14,20 +14,20 @@ class DBManager:
         self.countries = countries
         self.params = DBManager.config(self.path)
 
-        self.creating_a_database(self.params, self.db_name)
+        # self.creating_a_database(self.params, self.db_name)
 
-        aaa = [{'lamin': '47.2701114', 'lamax': '55.0991610', 'lomin': '5.8663153', 'lomax': '15.0419309'},
-               {'lamin': '49.0020468', 'lamax': '55.0360500', 'lomin': '14.0696389', 'lomax': '24.1457830'},
-               {'lamin': '35.2889616', 'lamax': '47.0921485', 'lomin': '6.6272658', 'lomax': '18.7844746'},
-               {'lamin': '45.7371280', 'lamax': '48.5852570', 'lomin': '16.1138866', 'lomax': '22.8965048'}]
-        i=0
-        for country in countries:
-            # api_coord = ApiCoord(country)
-            # api_aeroplanes = ApiAeroplanes(api_coord.coordinates).list_info
-            api_aeroplanes = ApiAeroplanes(aaa[i]).list_info
-            i+=1
-
-            DBManager.creating_a_table(country, api_aeroplanes, self.db_name, self.params)
+        # aaa = [{'lamin': '47.2701114', 'lamax': '55.0991610', 'lomin': '5.8663153', 'lomax': '15.0419309'},
+        #        {'lamin': '49.0020468', 'lamax': '55.0360500', 'lomin': '14.0696389', 'lomax': '24.1457830'},
+        #        {'lamin': '35.2889616', 'lamax': '47.0921485', 'lomin': '6.6272658', 'lomax': '18.7844746'},
+        #        {'lamin': '45.7371280', 'lamax': '48.5852570', 'lomin': '16.1138866', 'lomax': '22.8965048'}]
+        # i=0
+        # for country in countries:
+        #     # api_coord = ApiCoord(country)
+        #     # api_aeroplanes = ApiAeroplanes(api_coord.coordinates).list_info
+        #     api_aeroplanes = ApiAeroplanes(aaa[i]).list_info
+        #     i+=1
+        #
+        #     DBManager.creating_a_table(country, api_aeroplanes, self.db_name, self.params)
 
         conn = psycopg2.connect(dbname=self.db_name, **self.params)
         cur = conn.cursor()
@@ -125,7 +125,7 @@ class DBManager:
         result = []
         tables = cur.fetchall()
         for table in tables:
-            cur.execute(f"SELECT * FROM public.{table[0]};")
+            cur.execute(f"SELECT ICAO24, Callsign, Country_of_reg FROM public.{table[0]};")
             result.append(cur.fetchall())
 
         cur.close()
@@ -134,7 +134,16 @@ class DBManager:
 
     def get_avg_speed(self):
         """получает среднюю скорость по самолетам."""
-        pass
+
+
+
+
+
+
+
+
+
+
 
     def get_aeroplanes_with_higher_speed(self):
         """получает список всех самолетов, у которых скорость выше средней."""
