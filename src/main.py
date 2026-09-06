@@ -9,15 +9,17 @@ def creation_of_aircraft_database(countries:list[str]) -> None:
     dbm = DBManager('airplanes', 'database.ini')
 
     for country in countries:
-
-        dbm.creating_a_table(country)
-
         api_coord = ApiCoord(country)
         api_aeroplanes = ApiAeroplanes(api_coord.coordinates).list_info
 
+        dbm.creating_a_table(country,api_aeroplanes)
+
+
+
+
 
         # break
-
+        a=1
 
 
 if __name__ == "__main__":
