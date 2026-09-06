@@ -132,10 +132,25 @@ class DBManager:
         conn.close()
         return result
 
-    def get_avg_speed(self):
+
+
+    def get_avg_speed(self)->dict:
         """получает среднюю скорость по самолетам."""
 
+        conn = psycopg2.connect(dbname=self.db_name, **self.params)
+        cur = conn.cursor()
 
+        cur.execute("SELECT table_name FROM information_schema.tables "
+                    "WHERE table_type = 'BASE TABLE' AND table_schema = 'public';")
+        result = {}
+        tables = cur.fetchall()
+        for table in tables:
+            cur.execute(f"SELECT AVG(Velocity) FROM public.{table[0]};")
+            result[table[0][3:].title()] = cur.fetchall()[0][0]
+
+        cur.close()
+        conn.close()
+        return result
 
 
 

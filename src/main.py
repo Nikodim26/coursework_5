@@ -7,21 +7,24 @@ def creation_of_aircraft_database(countries:list[str]) -> None:
 
     dbm = DBManager('airplanes', 'database.ini', countries)
 
-    # # Самолеты по странам
-    # data=dbm.get_countries_and_aeroplanes_count()
-    # for key,value in data.items():
-    #     print(f'В пространстве "{translate_text(key)}" находится {value} самолет{end(value)}')
-    #
-    # # Всего самолетов
-    # data=dbm.get_all_aeroplanes()
-    # counter = 0
-    # countries = [translate_text(country.title()) for country in countries]
-    # for dt in data:
-    #     counter+=len(dt)
-    # print(f'\nВсего в пространствах {', '.join(countries).title()} находятся {counter} самолет{end(counter)}')
+    # Самолеты по странам
+    data=dbm.get_countries_and_aeroplanes_count()
+    for key,value in data.items():
+        print(f'В пространстве "{translate_text(key)}" находится {value} самолет{end(value)}')
+
+    # Всего самолетов
+    data=dbm.get_all_aeroplanes()
+    counter = 0
+    countries = [translate_text(country.title()) for country in countries]
+    for dt in data:
+        counter+=len(dt)
+    print(f'\nВсего в пространствах {', '.join(countries).title()} находятся {counter} самолет{end(counter)}\n')
 
     # Средняя скорость самолетов
-    print(dbm.get_avg_speed())
+    data = dbm.get_avg_speed()
+    for key,value in data.items():
+        print(f'В пространстве "{translate_text(key)}" средняя скорость самолетов {round(value,2)} м/с')
+
 
 if __name__ == "__main__":
     creation_of_aircraft_database(['germany','poland','italy','hungary'])
