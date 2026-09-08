@@ -1,3 +1,4 @@
+from configparser import ConfigParser
 from typing import Any
 
 from translate import Translator
@@ -24,3 +25,18 @@ def end(number) -> str:
             return "а"
         else:
             return "ов"
+
+
+def config(path) -> dict:
+    """Выдает параметры подключения к базе данных"""
+
+    parser = ConfigParser()
+    parser.read(path)
+
+    if parser.has_section("postgresql"):
+        params = parser.items("postgresql")
+        params = {param[0]: param[1] for param in params}
+    else:
+        raise Exception("Section {0} is not found in the {1} file.".format("postgresql", path))
+
+    return params

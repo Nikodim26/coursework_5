@@ -1,10 +1,10 @@
-from configparser import ConfigParser
 from pathlib import Path
 
 import psycopg2
 
 from src.api_airplanes import ApiAeroplanes
 from src.api_coord import ApiCoord
+from src.utils import config
 
 
 class DBManager:
@@ -13,14 +13,14 @@ class DBManager:
         self.path = Path(__file__).resolve().parent.parent / filename
         self.db_name = db_name
         self.countries = countries
-        self.params = DBManager.config(self.path)
+        self.params = config(self.path)
 
         self.creating_a_database(self.params, self.db_name)
 
         for country in countries:
             api_coord = ApiCoord(country)
             api_aeroplanes = ApiAeroplanes(api_coord.coordinates).list_info
-            DBManager.creating_a_table(country, api_aeroplanes, self.db_name, self.params)
+            DBManager.creating_a_tables(country, api_aeroplanes, self.db_name, self.params)
 
         conn = psycopg2.connect(dbname=self.db_name, **self.params)
         cur = conn.cursor()
@@ -33,19 +33,6 @@ class DBManager:
 
         cur.close()
         conn.close()
-
-    @staticmethod
-    def config(path) -> dict:
-        parser = ConfigParser()
-        parser.read(path)
-
-        if parser.has_section("postgresql"):
-            params = parser.items("postgresql")
-            params = {param[0]: param[1] for param in params}
-        else:
-            raise Exception("Section {0} is not found in the {1} file.".format("postgresql", path))
-
-        return params
 
     @staticmethod
     def creating_a_database(params, db_name) -> None:
@@ -63,7 +50,7 @@ class DBManager:
         conn.close()
 
     @staticmethod
-    def creating_a_table(country: str, data: list, db_name: str, params: dict) -> None:
+    def creating_a_tables(country: str, data: list, db_name: str, params: dict) -> None:
         """Создает таблицу с характеристиками самолетов над страной"""
 
         conn = psycopg2.connect(dbname=db_name, **params)
