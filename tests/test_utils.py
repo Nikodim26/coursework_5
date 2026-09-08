@@ -1,6 +1,7 @@
 import pytest
 
-from src.utils import translate_text, end
+from src.utils import end
+from src.utils import translate_text
 
 
 def test_translate_text() -> None:
