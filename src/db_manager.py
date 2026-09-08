@@ -80,14 +80,14 @@ class DBManager:
                     On_ground BOOLEAN                                
                     )
                     ''')
+        if data:
+            cur.execute(f'TRUNCATE TABLE public.tb_{country} RESTART IDENTITY')
 
-        cur.execute(f'TRUNCATE TABLE public.tb_{country} RESTART IDENTITY')
-
-        for dt in data:
-            cur.execute(f"""INSERT INTO public.tb_{country} 
-            (ICAO24,Callsign,Country_of_reg,Velocity,Geo_altitude,Longitude,Latitude,True_track,On_ground)             
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                        (dt[0], dt[1].strip(), dt[2], dt[9], dt[13], dt[5], dt[6], dt[10], dt[8]))
+            for dt in data:
+                cur.execute(f"""INSERT INTO public.tb_{country} 
+                (ICAO24,Callsign,Country_of_reg,Velocity,Geo_altitude,Longitude,Latitude,True_track,On_ground)             
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                            (dt[0], dt[1].strip(), dt[2], dt[9], dt[13], dt[5], dt[6], dt[10], dt[8]))
 
         cur.close()
         conn.close()

@@ -16,5 +16,5 @@ def end(number)->str:
     else:
         last_digit = number % 10
         if last_digit == 1: return ''
-        elif last_digit in (2, 3, 4): return 'a'
+        elif last_digit in (2, 3, 4): return 'а'
         else: return 'ов'
