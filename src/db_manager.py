@@ -36,19 +36,14 @@ class DBManager:
         cur.close()
         conn.close()
 
-    def creating_a_database(self) -> None:
-        """Создает базу данных"""
 
-        conn = psycopg2.connect(dbname="postgres", **self.params)
-        conn.autocommit = True
-        cur = conn.cursor()
+    @conn_decorator
+    def creating_a_database(self, cur) -> None:
+        """Создает базу данных"""
 
         cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{self.db_name}'")
         if not cur.fetchone():
             cur.execute(f"CREATE DATABASE {self.db_name}")
-
-        cur.close()
-        conn.close()
 
 
     @conn_decorator

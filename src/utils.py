@@ -47,8 +47,11 @@ def conn_decorator(func):
     """Создает и закрывает соединение с базой данных"""
 
     def wrapper(*args):
+
         try:
-            conn = psycopg2.connect(dbname=args[0].db_name, **args[0].params)
+            base='postgres' if func.__name__== "creating_a_database" else args[0].db_name
+
+            conn = psycopg2.connect(dbname=base, **args[0].params)
             conn.autocommit = True
             cur = conn.cursor()
 
