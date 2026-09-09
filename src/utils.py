@@ -2,7 +2,7 @@ from configparser import ConfigParser
 from typing import Any
 
 from translate import Translator
-
+import psycopg2
 
 def translate_text(text: str) -> Any:
     """Переводит текст"""
@@ -40,3 +40,4 @@ def config(path) -> dict:
         raise Exception("Section {0} is not found in the {1} file.".format("postgresql", path))
 
     return params
+

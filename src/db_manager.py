@@ -81,11 +81,10 @@ class DBManager:
         cur.close()
         conn.close()
 
-    def get_countries_and_aeroplanes_count(self) -> dict:
-        """Получает список всех стран и количество самолетов в их воздушных пространствах."""
 
-        conn = psycopg2.connect(dbname=self.db_name, **self.params)
-        cur = conn.cursor()
+    @conn_decorator('db_name')
+    def get_countries_and_aeroplanes_count(self, cur) -> dict:
+        """Получает список всех стран и количество самолетов в их воздушных пространствах."""
 
         result = {}
         tables = self.tables
