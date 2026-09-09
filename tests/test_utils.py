@@ -1,0 +1,23 @@
+import pytest
+
+from src.utils import end, config
+from src.utils import translate_text
+
+
+def test_translate_text() -> None:
+    assert translate_text("germany") == "Германия"
+    assert translate_text("poland") == "Польша"
+
+
+@pytest.mark.parametrize("x, expected", [(1, ""), (2, "а"), (5, "ов"), (134, "а"), (241, ""), (1056, "ов")])
+def test_end(x: int, expected: str) -> None:
+    assert end(x) == expected
+
+
+def test_config(fixture_for_object_construction) -> None:
+    dbm = fixture_for_object_construction
+    assert config(dbm.path) == dbm.params
+
+def test_config_err(fixture_for_object_construction) -> None:
+    with pytest.raises(Exception):
+        config('')

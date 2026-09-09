@@ -1,45 +1,67 @@
-import json
-from pathlib import Path
+from configparser import ConfigParser
 from typing import Any
 
+import psycopg2
 from translate import Translator
-
-from src.airplane import Airplane
 
 
 def translate_text(text: str) -> Any:
     """Переводит текст"""
 
-    translator_to_en = Translator(to_lang="en")
+    translator_to_ru = Translator(to_lang="ru")
 
-    if "а" <= text[0] <= "я" or "А" <= text[0] <= "Я":
-        return translator_to_en.translate(text).title()
-    return text.title()
+    return translator_to_ru.translate(text).title()
 
 
-def write_file(file: str, api_airplanes: list) -> None:
-    """Производит запись о самолетах в файл"""
+def end(number) -> str:
+    """Определяет окончание слова, обозначающего число"""
 
-    path_file = Path(__file__).resolve().parent.parent / "data" / file
-    aeroplanes_list = []
+    if 10 <= number % 100 <= 14:
+        return "ов"
+    else:
+        last_digit = number % 10
+        if last_digit == 1:
+            return ""
+        elif last_digit in (2, 3, 4):
+            return "а"
+        else:
+            return "ов"
 
-    for dt in api_airplanes:
+
+def config(path) -> dict:
+    """Выдает параметры подключения к базе данных"""
+
+    parser = ConfigParser()
+    parser.read(path)
+
+    if parser.has_section("postgresql"):
+        params = parser.items("postgresql")
+        params = {param[0]: param[1] for param in params}
+    else:
+        raise Exception("Section {0} is not found in the {1} file.".format("postgresql", path))
+
+    return params
+
+
+def conn_decorator(func):
+    """Создает и закрывает соединение с базой данных"""
+
+    def wrapper(*args):
+
         try:
-            aeroplane = Airplane(dt[0], dt[2], dt[9], dt[13])
+            base = "postgres" if func.__name__ == "creating_a_database" else args[0].db_name
 
-            aeroplanes_list.append(
-                {
-                    "ICAO24": aeroplane.ICAO24,
-                    "Country": aeroplane.Country_of_registration,
-                    "Velocity": aeroplane.velocity,
-                    "Altitude": aeroplane.geo_altitude,
-                }
-            )
-        except ValueError:
-            print("Не добавлена информация о самолетах в файл")
+            conn = psycopg2.connect(dbname=base, **args[0].params)
+            conn.autocommit = True
+            cur = conn.cursor()
 
-    if aeroplanes_list:
-        with open(path_file, "w", encoding="utf-8") as f:
-            json.dump(aeroplanes_list, f, indent=4, ensure_ascii=False)
+            result = func(args[0], cur, args[1]) if len(args) > 1 else func(args[0], cur)
 
-        print("Добавлена информация о самолетах в файл\n")
+            cur.close()
+            conn.close()
+            return result
+
+        except Exception:
+            print("Ошибка получения данных")
+
+    return wrapper
