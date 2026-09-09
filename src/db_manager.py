@@ -10,7 +10,7 @@ from src.utils import config
 
 class DBManager:
 
-    def __init__(self, db_name: str, filename: str, countries: list = []) -> None:
+    def __init__(self, db_name: str, filename: str, countries: list) -> None:
         self.path = Path(__file__).resolve().parent.parent / filename
         self.db_name = db_name
         self.countries = countries
