@@ -4,6 +4,7 @@ from typing import Any
 from translate import Translator
 import psycopg2
 
+
 def translate_text(text: str) -> Any:
     """Переводит текст"""
 
@@ -41,3 +42,22 @@ def config(path) -> dict:
 
     return params
 
+
+def conn_decorator(func):
+    """Создает и закрывает соединение с базой данных"""
+
+    def wrapper(*args):
+        try:
+            conn = psycopg2.connect(dbname=args[0].db_name, **args[0].params)
+            cur = conn.cursor()
+
+            result = func(args[0], cur, args[1]) if len(args)>1 else func(args[0], cur)
+
+            cur.close()
+            conn.close()
+            return result
+
+        except Exception:
+            print('Ошибка получения данных')
+
+    return wrapper

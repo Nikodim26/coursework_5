@@ -2,6 +2,7 @@ from pathlib import Path
 
 import psycopg2
 
+from src.utils import conn_decorator
 from src.api_airplanes import ApiAeroplanes
 from src.api_coord import ApiCoord
 from src.utils import config
@@ -9,7 +10,7 @@ from src.utils import config
 
 class DBManager:
 
-    def __init__(self, db_name: str, filename: str, countries: list) -> None:
+    def __init__(self, db_name: str, filename: str, countries: list = []) -> None:
         self.path = Path(__file__).resolve().parent.parent / filename
         self.db_name = db_name
         self.countries = countries
@@ -81,8 +82,7 @@ class DBManager:
         cur.close()
         conn.close()
 
-
-    @conn_decorator('db_name')
+    @conn_decorator
     def get_countries_and_aeroplanes_count(self, cur) -> dict:
         """Получает список всех стран и количество самолетов в их воздушных пространствах."""
 
@@ -94,11 +94,9 @@ class DBManager:
 
         return result
 
-    def get_all_aeroplanes(self) -> list:
+    @conn_decorator
+    def get_all_aeroplanes(self, cur) -> list:
         """получает список всех воздушных судов."""
-
-        conn = psycopg2.connect(dbname=self.db_name, **self.params)
-        cur = conn.cursor()
 
         cur.execute(
             "SELECT table_name FROM information_schema.tables "
@@ -110,15 +108,12 @@ class DBManager:
             cur.execute(f"SELECT ICAO24, Callsign, Country_of_reg FROM public.{table[0]};")
             result.extend(cur.fetchall())
 
-        cur.close()
-        conn.close()
         return result
 
-    def get_avg_speed(self) -> float:
-        """получает среднюю скорость по самолетам."""
 
-        conn = psycopg2.connect(dbname=self.db_name, **self.params)
-        cur = conn.cursor()
+    @conn_decorator
+    def get_avg_speed(self, cur) -> float:
+        """получает среднюю скорость по самолетам."""
 
         cur.execute(
             "SELECT table_name FROM information_schema.tables "
@@ -130,17 +125,14 @@ class DBManager:
             cur.execute(f"SELECT AVG(Velocity) FROM public.{table[0]};")
             result += cur.fetchall()[0][0]
 
-        cur.close()
-        conn.close()
         return result / len(tables)
 
-    def get_aeroplanes_with_higher_speed(self) -> list:
+
+    @conn_decorator
+    def get_aeroplanes_with_higher_speed(self, cur) -> list:
         """получает список всех самолетов, у которых скорость выше средней."""
 
         velocity_avg = self.get_avg_speed()
-
-        conn = psycopg2.connect(dbname=self.db_name, **self.params)
-        cur = conn.cursor()
 
         cur.execute(
             "SELECT table_name FROM information_schema.tables "
@@ -155,15 +147,12 @@ class DBManager:
             )
             result.extend(cur.fetchall())
 
-        cur.close()
-        conn.close()
         return result
 
-    def get_aeroplanes_with_keyword(self, symbols: str) -> list:
-        """получает список всех самолетов, в позывном которых содержатся переданные в метод символы."""
 
-        conn = psycopg2.connect(dbname=self.db_name, **self.params)
-        cur = conn.cursor()
+    @conn_decorator
+    def get_aeroplanes_with_keyword(self, cur, symbols: str) -> list:
+        """получает список всех самолетов, в позывном которых содержатся переданные в метод символы."""
 
         cur.execute(
             "SELECT table_name FROM information_schema.tables "
@@ -178,6 +167,4 @@ class DBManager:
             )
             result.extend(cur.fetchall())
 
-        cur.close()
-        conn.close()
         return result
