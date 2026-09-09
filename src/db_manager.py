@@ -2,10 +2,10 @@ from pathlib import Path
 
 import psycopg2
 
-from src.utils import conn_decorator
 from src.api_airplanes import ApiAeroplanes
 from src.api_coord import ApiCoord
 from src.utils import config
+from src.utils import conn_decorator
 
 
 class DBManager:
@@ -36,7 +36,6 @@ class DBManager:
         cur.close()
         conn.close()
 
-
     @conn_decorator
     def creating_a_database(self, cur) -> None:
         """Создает базу данных"""
@@ -44,7 +43,6 @@ class DBManager:
         cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{self.db_name}'")
         if not cur.fetchone():
             cur.execute(f"CREATE DATABASE {self.db_name}")
-
 
     @conn_decorator
     def creating_a_tables(self, cur, country):
@@ -67,11 +65,12 @@ class DBManager:
             cur.execute(f"TRUNCATE TABLE public.tb_{country} RESTART IDENTITY")
 
             for dt in self.api_aeroplanes:
-                cur.execute(f"""INSERT INTO public.tb_{country}
+                cur.execute(
+                    f"""INSERT INTO public.tb_{country}
                 (ICAO24,Callsign,Country_of_reg,Velocity,Geo_altitude,Longitude,Latitude,True_track,On_ground)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                            (dt[0], dt[1].strip(), dt[2], dt[9], dt[13], dt[5], dt[6], dt[10], dt[8]))
-
+                    (dt[0], dt[1].strip(), dt[2], dt[9], dt[13], dt[5], dt[6], dt[10], dt[8]),
+                )
 
     @conn_decorator
     def get_countries_and_aeroplanes_count(self, cur) -> dict:
@@ -101,7 +100,6 @@ class DBManager:
 
         return result
 
-
     @conn_decorator
     def get_avg_speed(self, cur) -> float:
         """получает среднюю скорость по самолетам."""
@@ -117,7 +115,6 @@ class DBManager:
             result += cur.fetchall()[0][0]
 
         return result / len(tables)
-
 
     @conn_decorator
     def get_aeroplanes_with_higher_speed(self, cur) -> list:
@@ -140,7 +137,6 @@ class DBManager:
             result.extend(cur.fetchall())
 
         return result
-
 
     @conn_decorator
     def get_aeroplanes_with_keyword(self, cur, symbols: str) -> list:

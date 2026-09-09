@@ -1,8 +1,8 @@
 from configparser import ConfigParser
 from typing import Any
 
-from translate import Translator
 import psycopg2
+from translate import Translator
 
 
 def translate_text(text: str) -> Any:
@@ -49,19 +49,19 @@ def conn_decorator(func):
     def wrapper(*args):
 
         try:
-            base='postgres' if func.__name__== "creating_a_database" else args[0].db_name
+            base = "postgres" if func.__name__ == "creating_a_database" else args[0].db_name
 
             conn = psycopg2.connect(dbname=base, **args[0].params)
             conn.autocommit = True
             cur = conn.cursor()
 
-            result = func(args[0], cur, args[1]) if len(args)>1 else func(args[0], cur)
+            result = func(args[0], cur, args[1]) if len(args) > 1 else func(args[0], cur)
 
             cur.close()
             conn.close()
             return result
 
         except Exception:
-            print('Ошибка получения данных')
+            print("Ошибка получения данных")
 
     return wrapper
