@@ -49,6 +49,7 @@ def conn_decorator(func):
     def wrapper(*args):
         try:
             conn = psycopg2.connect(dbname=args[0].db_name, **args[0].params)
+            conn.autocommit = True
             cur = conn.cursor()
 
             result = func(args[0], cur, args[1]) if len(args)>1 else func(args[0], cur)

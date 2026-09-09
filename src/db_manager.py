@@ -16,12 +16,13 @@ class DBManager:
         self.countries = countries
         self.params = config(self.path)
 
-        self.creating_a_database(self.params, self.db_name)
+        self.creating_a_database()
 
         for country in countries:
             api_coord = ApiCoord(country)
-            api_aeroplanes = ApiAeroplanes(api_coord.coordinates).list_info
-            DBManager.creating_a_tables(country, api_aeroplanes, self.db_name, self.params)
+            self.api_aeroplanes = ApiAeroplanes(api_coord.coordinates).list_info
+
+            self.creating_a_tables(country)
 
         conn = psycopg2.connect(dbname=self.db_name, **self.params)
         cur = conn.cursor()
@@ -35,28 +36,24 @@ class DBManager:
         cur.close()
         conn.close()
 
-    @staticmethod
-    def creating_a_database(params, db_name) -> None:
+    def creating_a_database(self) -> None:
         """Создает базу данных"""
 
-        conn = psycopg2.connect(dbname="postgres", **params)
+        conn = psycopg2.connect(dbname="postgres", **self.params)
         conn.autocommit = True
         cur = conn.cursor()
 
-        cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}'")
+        cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{self.db_name}'")
         if not cur.fetchone():
-            cur.execute(f"CREATE DATABASE {db_name}")
+            cur.execute(f"CREATE DATABASE {self.db_name}")
 
         cur.close()
         conn.close()
 
-    @staticmethod
-    def creating_a_tables(country: str, data: list, db_name: str, params: dict) -> None:
-        """Создает таблицу с характеристиками самолетов над страной"""
 
-        conn = psycopg2.connect(dbname=db_name, **params)
-        conn.autocommit = True
-        cur = conn.cursor()
+    @conn_decorator
+    def creating_a_tables(self, cur, country):
+        """Создает таблицу с характеристиками самолетов над страной"""
 
         cur.execute(f"""CREATE TABLE IF NOT EXISTS tb_{country} (
                     airplane_id SERIAL PRIMARY KEY,
@@ -70,17 +67,16 @@ class DBManager:
                     True_track REAL,
                     On_ground BOOLEAN
                     )""")
-        if data:
+
+        if self.api_aeroplanes:
             cur.execute(f"TRUNCATE TABLE public.tb_{country} RESTART IDENTITY")
 
-            for dt in data:
+            for dt in self.api_aeroplanes:
                 cur.execute(f"""INSERT INTO public.tb_{country}
                 (ICAO24,Callsign,Country_of_reg,Velocity,Geo_altitude,Longitude,Latitude,True_track,On_ground)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                             (dt[0], dt[1].strip(), dt[2], dt[9], dt[13], dt[5], dt[6], dt[10], dt[8]))
 
-        cur.close()
-        conn.close()
 
     @conn_decorator
     def get_countries_and_aeroplanes_count(self, cur) -> dict:
@@ -138,6 +134,7 @@ class DBManager:
             "SELECT table_name FROM information_schema.tables "
             "WHERE table_type = 'BASE TABLE' AND table_schema = 'public';"
         )
+
         result = []
         tables = cur.fetchall()
         for table in tables:
