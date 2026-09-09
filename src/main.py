@@ -6,7 +6,7 @@ from src.utils import translate_text
 def creation_of_aircraft_database(countries: list[str]) -> None:
     """Работает с базой данных о самолетах в воздушном пространстве указанных стран"""
 
-    dbm = DBManager("airplanes1", "database.ini", countries)
+    dbm = DBManager("airplanes", "database.ini", countries)
 
     # Самолеты по странам
     data = dbm.get_countries_and_aeroplanes_count()
